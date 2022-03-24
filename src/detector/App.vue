@@ -1,7 +1,13 @@
 <template>
   <div class="detector" v-drag :id="id" ref="detector">
-    <div class="header" data-anchor>Vue Detector ( v{{ version }} )</div>
-    <div class="content"></div>
+    <div class="d-header" data-anchor>Vue Detector ( v{{ version }} )</div>
+    <div class="d-content">
+      <div class="d-tools">
+        <el-input v-model="searchVal" size="mini" placeholder="搜索属性或者元素"></el-input>
+        <el-button size="mini" type="primary">查询</el-button>
+        <el-button icon="el-icon-refresh" size="mini" circle alt="刷新" type="warning"></el-button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -18,6 +24,9 @@ export default {
     return {
       id: "detector-" + Math.random().toString(36).substr(2, 9),
       version: packInfo.version,
+
+      searchVal: "",
+
     };
   },
   mounted() {
@@ -53,8 +62,9 @@ export default {
 };
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 .detector {
+  z-index:999999;
   width: 800px;
   height: 600px;
   display: flex;
@@ -65,7 +75,7 @@ export default {
   box-shadow: 0px 0px 10px #3f3f3f, 0 0 0px 0.5px #3f3f3f;
   overflow: hidden;
   border-radius: 3px;
-  .header {
+  .d-header {
     height: 30px;
     width: 100%;
     flex: none;
@@ -85,11 +95,19 @@ export default {
       }
     }
   }
-  .content {
+  .d-content {
     flex: auto;
     width: 100%;
     background-color: white;
     transition: opacity 0.05s;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    .d-tools{
+      padding:5px;
+      flex:none;
+      display: flex;
+    }
   }
 }
 </style>

@@ -1,5 +1,12 @@
 import App from "./App.vue"
-import Vue from "vue"
+// import Vue from "vue"
+import Vue from "vue/dist/vue.esm.browser.js"
+import ElementUI from "element-ui/src/index.js";
+import "element-ui/lib/theme-chalk/index.css"
+import './assets/style/theme/index.css';
+
+Vue.use(ElementUI);
+
 
 export default class Detector {
   constructor() {
