@@ -33,13 +33,77 @@
           icon="el-icon-refresh"
           size="mini"
           circle
+          title="刷新"
           alt="刷新"
           type="warning"
           @click="refresh()"
         ></el-button>
+        <el-button
+          icon="el-icon-aim"
+          size="mini"
+          circle
+          title="智能过滤"
+          alt="智能过滤"
+          :type="autoFilter ? 'primary' : 'default'"
+          @click="
+            () => {
+              autoFilter = !autoFilter;
+              this.refresh();
+            }
+          "
+        ></el-button>
       </div>
 
+      <div class="d-vline"></div>
       <!-- 中部组件树 -->
+
+      <div class="d-main">
+        <div class="d-components">
+          <el-tree
+            ref="tree"
+            :data="rootComponents"
+            node-key="_uid"
+            :props="vueInstanceProps"
+            default-expand-all
+            :expand-on-click-node="false"
+            empty-text="Anonymous"
+            @node-click="showNode"
+          >
+          </el-tree>
+        </div>
+        <div class="d-hline"></div>
+        <div class="d-details">
+          <template v-if="inspectComponent">
+            <div class="d-info">DOM: {{ inspectComponent.$el }}</div>
+            <div class="d-info">
+              data:
+              <pre>{{ JSON.stringify(inspectComponent.$data, null, 2) }}</pre>
+            </div>
+            <div class="d-info" v-if="inspectComponent.$options.methods">
+              methods:
+              <div class="d-methods-list">
+                <div
+                  class="d-methods-item"
+                  v-for="(method, key) in inspectComponent.$options.methods"
+                  :key="key"
+                >
+                  <span class="d-methods-item-name" :title="method">{{ key }}</span>
+                  <span class="d-methods-item-desc">{{ method.length }}</span>
+                  <span class="d-methods-item-call">
+                    <el-button
+                      type="primary"
+                      size="mini"
+                      v-if="method.length == 0"
+                      @click="callMethod(inspectComponent, key)"
+                      >调用</el-button
+                    >
+                  </span>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -60,7 +124,20 @@ export default {
       version: packInfo.version,
 
       searchVal: "",
+      autoFilter: true, // 智能过滤
+
       rootComponents: [],
+      vueInstanceProps: {
+        label: (data) => {
+          return (
+            `[${data.$options.name || ""}] <${data.$options._componentTag || ""}>` ||
+            `${data.$options.el}` ||
+            "Anonymous"
+          );
+        },
+        children: "$children",
+      },
+      inspectComponent: null,
     };
   },
   mounted() {
@@ -68,14 +145,22 @@ export default {
   },
   methods: {
     fetchRootComponents() {
+      this.rootComponents = [];
       let components = document.querySelectorAll("*");
       components = [...components]
         .filter((comp) => comp.__vue__)
         .map((comp) => comp.__vue__);
       // 遍历结构，找到根节点，移除 Detector 的根节点
-      const rootComponents = this.filterChildren(components).filter(
-        (comp) => comp.$el !== this.$el
-      );
+      const rootComponents = this.filterChildren(components)
+        .filter((comp) => comp.$el !== this.$el)
+        .filter((comp) => {
+          if (this.autoFilter) {
+            if (comp.$options.name === "transition") {
+              return false;
+            }
+          }
+          return true;
+        });
 
       // 页面上的 Vue 组件树的所有根节点
       this.rootComponents = rootComponents;
@@ -92,8 +177,14 @@ export default {
       }
       return components;
     },
+    callMethod(comp, key) {
+      console.log(comp[key]());
+    },
+    showNode(data) {
+      console.log(data);
+      this.inspectComponent = data;
+    },
     refresh() {
-      this.rootComponents = [];
       this.fetchRootComponents();
     },
     close() {
@@ -166,11 +257,75 @@ export default {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
+    overflow: hidden;
     .d-tools {
       padding: 5px;
       flex: none;
       display: flex;
     }
+    .d-main {
+      display: flex;
+      flex: auto;
+      width: 100%;
+      flex-direction: row;
+      padding: 3px;
+      overflow: hidden;
+      .d-components {
+        flex: 1;
+        color: #3f3f3f;
+        overflow: auto;
+      }
+      .d-details {
+        flex: 1;
+        overflow: auto;
+        padding: 5px;
+        .d-info {
+          .d-methods-list {
+            padding: 7px 0;
+            .d-methods-item {
+              width: 100%;
+              display: flex;
+              padding: 0 15px;
+              height: 30px;
+              .d-methods-item-name {
+                font-weight: bold;
+                display: inline-block;
+                flex: 1;
+              }
+              .d-methods-item-desc {
+                color: #3f3f3f;
+                display: inline-block;
+                flex: 1;
+              }
+              .d-methods-item-call {
+                display: inline-block;
+                flex: 1;
+              }
+            }
+          }
+        }
+      }
+    }
   }
+  .d-vline {
+    width: 100%;
+    height: 0.5px;
+    background-color: #3f3f3f;
+    flex: none;
+  }
+  .d-hline {
+    width: 0.5px;
+    height: 100%;
+    background-color: #3f3f3f;
+    flex: none;
+    word-break: break-all;
+  }
+}
+</style>
+
+<style lang="less">
+.el-tree-node.is-current > .el-tree-node__content {
+  color: #0052d9;
+  font-weight: bold;
 }
 </style>

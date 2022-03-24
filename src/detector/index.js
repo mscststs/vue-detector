@@ -13,7 +13,7 @@ export default class Detector {
   constructor(options) {
     this.options =Object.assign({
       mode: "prod", // dev | prod 模式
-      reload : null // 重新加载的回调函数
+      reload: null // 重新加载的回调函数
     }, options);
 
     this.node = document.createElement('div');
