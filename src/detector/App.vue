@@ -1,12 +1,45 @@
 <template>
   <div class="detector" v-drag :id="id" ref="detector">
-    <div class="d-header" data-anchor>Vue Detector ( v{{ version }} )</div>
-    <div class="d-content">
-      <div class="d-tools">
-        <el-input v-model="searchVal" size="mini" placeholder="搜索属性或者元素"></el-input>
-        <el-button size="mini" type="primary">查询</el-button>
-        <el-button icon="el-icon-refresh" size="mini" circle alt="刷新" type="warning"></el-button>
+    <div class="d-header" v-drag.anchor>
+      <div class="d-left">
+        <el-button
+          class="d-head-icon"
+          icon="el-icon-close"
+          size="mini"
+          circle
+          alt="close"
+          type="danger"
+          @click="close"
+          v-drag.ignore
+        ></el-button>
       </div>
+      <div class="d-title">
+        Vue 探针 ( v{{ version }} ) - 探测到 {{ rootComponents.length }} 个 Vue 模块
+      </div>
+      <div class="d-right"></div>
+    </div>
+
+    <!-- 内容部分 -->
+    <div class="d-content">
+      <!-- 顶部 工具 -->
+      <div class="d-tools">
+        <el-input
+          v-model="searchVal"
+          size="mini"
+          placeholder="搜索属性或者元素"
+        ></el-input>
+        <el-button size="mini" type="primary">搜索</el-button>
+        <el-button
+          icon="el-icon-refresh"
+          size="mini"
+          circle
+          alt="刷新"
+          type="warning"
+          @click="refresh()"
+        ></el-button>
+      </div>
+
+      <!-- 中部组件树 -->
     </div>
   </div>
 </template>
@@ -20,17 +53,18 @@ export default {
   directives: {
     drag,
   },
+  props: ["options"],
   data() {
     return {
       id: "detector-" + Math.random().toString(36).substr(2, 9),
       version: packInfo.version,
 
       searchVal: "",
-
+      rootComponents: [],
     };
   },
   mounted() {
-    this.fetchRootComponents();
+    this.fetchRootComponents(); // 获取根组件
   },
   methods: {
     fetchRootComponents() {
@@ -44,7 +78,7 @@ export default {
       );
 
       // 页面上的 Vue 组件树的所有根节点
-      return rootComponents;
+      this.rootComponents = rootComponents;
     },
 
     filterChildren(components) {
@@ -58,13 +92,23 @@ export default {
       }
       return components;
     },
+    refresh() {
+      this.rootComponents = [];
+      this.fetchRootComponents();
+    },
+    close() {
+      this.$el.remove();
+      if (this.options.mode === "dev") {
+        this.options.reload && this.options.reload();
+      }
+    },
   },
 };
 </script>
 
 <style lang="less" scoped>
 .detector {
-  z-index:999999;
+  z-index: 999999;
   width: 800px;
   height: 600px;
   display: flex;
@@ -85,15 +129,34 @@ export default {
     justify-content: center;
     align-items: center;
     user-select: none;
+    .d-title {
+      flex: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .d-left,
+    .d-right {
+      width: 100px;
+      & .d-head-icon {
+        transform: scale(0.4);
+        font-weight: bold;
+        font-size: 1.4em;
+        color: transparent;
+        &:hover {
+          color: white;
+        }
+      }
+    }
     &:hover {
       cursor: grab;
     }
-    &:active {
-      background-color: #727272;
-      & + div {
-        opacity: 0.7;
-      }
-    }
+    // &:active {
+    //   background-color: #727272;
+    //   & + div {
+    //     opacity: 0.7;
+    //   }
+    // }
   }
   .d-content {
     flex: auto;
@@ -103,9 +166,9 @@ export default {
     display: flex;
     flex-direction: column;
     box-sizing: border-box;
-    .d-tools{
-      padding:5px;
-      flex:none;
+    .d-tools {
+      padding: 5px;
+      flex: none;
       display: flex;
     }
   }

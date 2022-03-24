@@ -17,8 +17,13 @@ function walk(path, callback) {
 }
 
 function replaceVue(path){
+  const commonVue = "import Vue from 'vue';";
+  const esmBrowserVue = "import Vue from 'vue/dist/vue.esm.browser.js';";
+  const esmRuntimeVue = "import Vue from 'vue/dist/vue.runtime.esm.js';";
+
   let content = fs.readFileSync(path, 'utf8');
-  content = content.replace("import Vue from 'vue';", "import Vue from 'vue/dist/vue.esm.browser.js';");
+  content = content.replace(commonVue, esmBrowserVue);
+  content = content.replace(esmBrowserVue, esmRuntimeVue);
   fs.writeFileSync(path, content);
 }
 

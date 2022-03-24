@@ -5,8 +5,9 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "prebuild": "node prebuild.js",
-    "build": "vue-cli-service build --target lib --name vueDetector --dest dist/vueDetector src/detector/index.js",
-    "postbuild": "node deploy.js",
+    "prebuild:prod": "node prebuild.js",
+    "build": "vue-cli-service build --target lib --name vueDetector --dest dist/vueDetector src/detector/index.js --watch",
+    "build:prod":"vue-cli-service build --target lib --name vueDetector --dest dist/vueDetector src/detector/index.js --mode production",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -15,7 +16,6 @@
     "vue": "^2.6.14"
   },
   "devDependencies": {
-    "@tencent/th-cosproxy-upload": "^1.0.10",
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
     "@vue/cli-plugin-babel": "~5.0.0",

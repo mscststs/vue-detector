@@ -2,8 +2,21 @@ export default {
   bind: function (el, binding){
     const SAFE = binding.modifiers.safe; // 是否安全模式
 
+    if(binding.modifiers.anchor){
+      el.dataset.anchor = "";
+      return;
+    }
+    if(binding.modifiers.ignore){
+      el.dataset.ignore = "";
+      return;
+    }
+
     el.onmousedown = function(e){
-      if(!e.target.attributes["data-anchor"]){
+      if(e.target.closest('[data-ignore]')){
+        return ;
+      }
+      // 检查祖先元素是否有 data-anchor
+      if(!e.target.closest('[data-anchor]')){
         return ;
       }
       //获取鼠标点击处分别与div左边和上边的距离：鼠标位置-div位置
